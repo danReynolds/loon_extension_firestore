@@ -10,10 +10,10 @@ extension DocumentExtensions<T> on LoonDocument<T> {
     final existingValue = get()!.data;
 
     try {
-      update(data);
+      LoonExtensionFirestore.instance._onWrite(this, data);
       await future;
     } catch (e) {
-      update(existingValue);
+      LoonExtensionFirestore.instance._onWrite(this, existingValue);
     }
   }
 
@@ -22,7 +22,7 @@ extension DocumentExtensions<T> on LoonDocument<T> {
     Future future,
   ) async {
     try {
-      create(data);
+      LoonExtensionFirestore.instance._onWrite(this, data);
       await future;
     } catch (e) {
       delete();

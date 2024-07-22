@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   cloud_firestore: ^5.1.0
+  fake_cloud_firestore: ^3.0.1
   flutter:
     sdk: flutter
   loon:
