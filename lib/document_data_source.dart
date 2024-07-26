@@ -25,8 +25,8 @@ class DocumentDataSource<T> {
           ? remote.withConverter<T>(
               fromFirestore: (snap, _) {
                 return serializer.fromJson({
-                  ...snap.data()!,
                   "id": snap.id,
+                  ...snap.data()!,
                 });
               },
               toFirestore: (item, _) => serializer.toJson(item),

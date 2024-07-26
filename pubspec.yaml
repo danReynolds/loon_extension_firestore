@@ -1,7 +1,7 @@
 name: loon_extension_firestore
-description: "A new Flutter package project."
+description: The Loon Firestore extension used to easily sync documents fetched remotely from Firestore into the local Loon cache.
 version: 0.0.1
-homepage:
+homepage: https://github.com/danReynolds/loon_extension_firestore
 
 environment:
   sdk: '>=3.2.6 <4.0.0'
