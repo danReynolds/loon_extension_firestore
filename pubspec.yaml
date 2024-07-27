@@ -8,14 +8,13 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  loon: ^3.1.0
   cloud_firestore: ^5.1.0
-  fake_cloud_firestore: ^3.0.1
   flutter:
     sdk: flutter
-  loon:
-    path: ../loon
 
 dev_dependencies:
+  fake_cloud_firestore: ^3.0.1
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
