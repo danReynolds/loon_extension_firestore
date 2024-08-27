@@ -38,7 +38,7 @@ class DocumentDataSource<T> {
   CollectionDataSource<S> subcollection<S>(
     String id, {
     Serializer<S>? serializer,
-    loon.PersistorSettings<S>? persistorSettings,
+    loon.PersistorSettings? persistorSettings,
     loon.DependenciesBuilder<S>? dependenciesBuilder,
   }) {
     return CollectionDataSource<S>(
