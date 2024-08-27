@@ -4,7 +4,7 @@ The [Loon](https://github.com/danReynolds/loon) Firestore extension used to easi
 
 ## Install
 ```dart
-pub add loon_extension_firestore
+flutter pub add loon_extension_firestore
 ```
 
 ## Getting started
