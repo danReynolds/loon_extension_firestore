@@ -6,7 +6,7 @@ class DocumentDataSource<T> {
 
   DocumentDataSource({
     required LoonDocument<T> local,
-    required FirestoreDocument<T> remote,
+    required FirestoreDocument remote,
     Serializer<T>? serializer,
   }) {
     this.local = LocalDocument<T>(
@@ -21,17 +21,7 @@ class DocumentDataSource<T> {
     this.remote = RemoteDocument<T>(
       local: this.local,
       serializer: serializer,
-      remote: serializer != null
-          ? remote.withConverter<T>(
-              fromFirestore: (snap, _) {
-                return serializer.fromJson({
-                  "id": snap.id,
-                  ...snap.data()!,
-                });
-              },
-              toFirestore: (item, _) => serializer.toJson(item),
-            )
-          : remote,
+      remote: remote,
     );
   }
 
@@ -55,19 +45,37 @@ class DocumentDataSource<T> {
 
 class RemoteDocument<T> {
   late final LoonDocument<T> _local;
-  late final FirestoreDocument<T> _remote;
+  late final FirestoreDocument _remote;
   final Serializer<T>? serializer;
 
   RemoteDocument({
     required LocalDocument<T> local,
-    required FirestoreDocument<T> remote,
+    required FirestoreDocument remote,
     this.serializer,
   }) {
     _local = local;
     _remote = remote;
   }
 
-  firestore.DocumentReference<T> get ref {
+  T? _writeSnap(RemoteDocumentSnapshot remoteSnap) {
+    final shouldWrite = LoonExtensionFirestore.instance._beforeWrite(
+      _local,
+      remoteSnap,
+      serializer,
+    );
+
+    if (shouldWrite) {
+      return LoonExtensionFirestore.instance._write(
+        _local,
+        remoteSnap,
+        serializer,
+      );
+    }
+
+    return null;
+  }
+
+  firestore.DocumentReference get ref {
     return _remote;
   }
 
@@ -75,8 +83,19 @@ class RemoteDocument<T> {
     return _remote.id;
   }
 
-  Future<void> create(T data) {
-    return _local.optimisticCreate(data, _remote.set(data));
+  Future<void> delete() {
+    return _remote.delete();
+  }
+
+  Future<void> create(
+    T data, {
+    bool optimistic = false,
+  }) {
+    final future = _remote.set(serializer?.toJson(data) ?? data);
+    if (optimistic) {
+      return _local.optimisticCreate(data, future);
+    }
+    return future;
   }
 
   Future<void> createOrUpdate(T data) {
@@ -89,20 +108,17 @@ class RemoteDocument<T> {
   Future<void> update(
     T data, {
     Set<String> fields = const {},
+    bool optimistic = false,
   }) {
-    return _local.optimisticUpdate(
-      data,
-      Future.sync(
-        () {
-          final json = serializer?.toJson.call(data) ?? data as loon.Json;
-          if (fields.isNotEmpty) {
-            return _remote.update(json.pick({...fields}));
-          } else {
-            return _remote.update(json);
-          }
-        },
-      ),
-    );
+    final json = serializer?.toJson.call(data) ?? data as loon.Json;
+    final pickedJson = fields.isNotEmpty ? json.pick({...fields}) : json;
+    final future = _remote.update(pickedJson);
+
+    if (optimistic) {
+      return _local.optimisticUpdate(data, future);
+    }
+
+    return future;
   }
 
   Future<void> modify(
@@ -114,17 +130,10 @@ class RemoteDocument<T> {
   }
 
   Future<T?> get() async {
-    final snap = await _remote.get();
-    final data = snap.data();
-    LoonExtensionFirestore.instance._onWrite(_local, data);
-    return data;
+    return _writeSnap(await _remote.get());
   }
 
   Stream<T?> stream() {
-    return _remote.snapshots().map((snap) {
-      final data = snap.data();
-      LoonExtensionFirestore.instance._onWrite(_local, data);
-      return data;
-    });
+    return _remote.snapshots().map(_writeSnap);
   }
 }
