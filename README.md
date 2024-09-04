@@ -83,9 +83,12 @@ This combines the need to specify a converter for the Firestore collection and f
 * **onWrite**: The `onWrite` handler can be used to perform a side-effect when a remote Firestore document is written to the local Loon cache.
 
 ```dart
-LoonExtensionFirestore.configure(enabled: true, onWrite: (snap) {
-  print(snap.path); // users__1
-});
+LoonExtensionFirestore.configure(
+  enabled: true,
+  onWrite: (snap) {
+    print(snap.path); // users__1
+  },
+);
 
 final dataSource = CollectionDataSource(
   serializer: Serializer(
@@ -102,11 +105,14 @@ final snap = await dataSource.doc('1').remote.get();
 * **onBeforeWrite**: The `onBeforeWrite` handler fires before a Firestore document is written to the local Loon cache and allows writing of documents to the cache to be canceled if the event returns false.
 
 ```dart
-LoonExtensionFirestore.configure(enabled: true, onBeforeWrite: (localDoc, remoteSnap, serializer) {
-  if (condition) {
-    return false; // Conditionally do not write to the Loon cache.
+LoonExtensionFirestore.configure(
+  enabled: true,
+  onBeforeWrite: (localDoc, remoteSnap, serializer) {
+    if (condition) {
+      return false; // Conditionally do not write to the Loon cache.
+    }
+    return true; 
   }
-  return true; 
-});
+);
 ```
 
