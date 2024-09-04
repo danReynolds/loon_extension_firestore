@@ -21,17 +21,7 @@ class CollectionDataSource<T> {
     this.remote = RemoteCollection<T>(
       serializer: serializer,
       local: this.local,
-      remote: serializer != null
-          ? remote.withConverter<T>(
-              fromFirestore: (snap, _) {
-                return serializer!.fromJson({
-                  "id": snap.id,
-                  ...snap.data()!,
-                });
-              },
-              toFirestore: (item, _) => serializer!.toJson(item),
-            )
-          : remote as FirestoreCollection<T>,
+      remote: remote,
     );
   }
 
@@ -46,13 +36,13 @@ class CollectionDataSource<T> {
 
 class RemoteCollection<T> {
   final LoonCollection<T> _local;
-  final FirestoreCollection<T> _remote;
+  final FirestoreCollection _remote;
   final Serializer<T>? serializer;
 
   RemoteCollection({
     this.serializer,
     required LocalCollection<T> local,
-    required FirestoreCollection<T> remote,
+    required FirestoreCollection remote,
   })  : _local = local,
         _remote = remote;
 
@@ -64,8 +54,8 @@ class RemoteCollection<T> {
     );
   }
 
-  RemoteQuery<T> where(
-    FirestoreQuery<T> Function(firestore.Query<T> query) query,
+  RemoteQuery where(
+    FirestoreQuery Function(firestore.Query query) query,
   ) {
     return toQuery().where(query);
   }
@@ -108,20 +98,44 @@ class RemoteCollection<T> {
 
 class RemoteQuery<T> {
   late final LocalCollection<T> _local;
-  late final FirestoreQuery<T> _remote;
+  late final FirestoreQuery _remote;
   final Serializer<T>? serializer;
 
   RemoteQuery({
     required this.serializer,
     required LoonCollection<T> local,
-    required FirestoreQuery<T> remote,
+    required FirestoreQuery remote,
   }) {
     _local = local;
     _remote = remote;
   }
 
+  List<T> _writeSnaps(List<firestore.QueryDocumentSnapshot> snaps) {
+    return snaps
+        .map(
+          (remoteSnap) {
+            final shouldWrite = LoonExtensionFirestore.instance._beforeWrite(
+              remoteSnap,
+              serializer,
+            );
+
+            if (shouldWrite) {
+              return LoonExtensionFirestore.instance._write(
+                _local.doc(remoteSnap.id),
+                remoteSnap,
+                serializer,
+              );
+            }
+
+            return null;
+          },
+        )
+        .whereType<T>()
+        .toList();
+  }
+
   RemoteQuery<T> where(
-    FirestoreQuery<T> Function(FirestoreQuery<T> collection) query,
+    FirestoreQuery Function(FirestoreQuery collection) query,
   ) {
     return RemoteQuery<T>(
       serializer: serializer,
@@ -151,26 +165,10 @@ class RemoteQuery<T> {
 
   Future<List<T>> get() async {
     final snap = await _remote.get();
-    final docs = snap.docs.map((docSnap) {
-      final data = docSnap.data();
-      LoonExtensionFirestore.instance._onWrite(_local.doc(docSnap.id), data);
-      return data;
-    }).toList();
-    return docs;
+    return _writeSnaps(snap.docs);
   }
 
   Stream<List<T>> stream() {
-    return _remote.snapshots().map(
-          (snap) => snap.docs.map(
-            (docSnap) {
-              final data = docSnap.data();
-              LoonExtensionFirestore.instance._onWrite(
-                _local.doc(docSnap.id),
-                data,
-              );
-              return data;
-            },
-          ).toList(),
-        );
+    return _remote.snapshots().map((snap) => _writeSnaps(snap.docs));
   }
 }
