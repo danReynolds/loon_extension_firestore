@@ -77,3 +77,36 @@ final dataSource = CollectionDataSource(
 ```
 
 This combines the need to specify a converter for the Firestore collection and for the Loon collection reference.
+
+## Lifecycle handlers
+
+* **onWrite**: The `onWrite` handler can be used to perform a side-effect when a remote Firestore document is written to the local Loon cache.
+
+```dart
+LoonExtensionFirestore.configure(enabled: true, onWrite: (snap) {
+  print(snap.path); // users__1
+});
+
+final dataSource = CollectionDataSource(
+  serializer: Serializer(
+    UserModel.fromJson,
+    (user) => user.toJson(),
+  ),
+  local: Loon.collection('users'),
+  remote: FirebaseFirestore.instance.collection('users'),
+);
+
+final snap = await dataSource.doc('1').remote.get();
+```
+
+* **onBeforeWrite**: The `onBeforeWrite` handler fires before a Firestore document is written to the local Loon cache and allows writing of documents to the cache to be canceled if the event returns false.
+
+```dart
+LoonExtensionFirestore.configure(enabled: true, onBeforeWrite: (localDoc, remoteSnap, serializer) {
+  if (condition) {
+    return false; // Conditionally do not write to the Loon cache.
+  }
+  return true; 
+});
+```
+

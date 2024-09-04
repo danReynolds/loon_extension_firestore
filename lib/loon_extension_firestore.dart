@@ -14,6 +14,7 @@ part 'serializer.dart';
 class LoonExtensionFirestore {
   bool enabled = false;
   bool Function(
+    LocalDocument doc,
     RemoteDocumentSnapshot snap,
     Serializer? serializer,
   )? onBeforeWrite;
@@ -27,6 +28,7 @@ class LoonExtensionFirestore {
     bool enabled = false,
     void Function(LocalDocumentSnapshot snap)? onWrite,
     bool Function(
+      LocalDocument doc,
       RemoteDocumentSnapshot snap,
       Serializer? serializer,
     )? onBeforeWrite,
@@ -46,22 +48,28 @@ class LoonExtensionFirestore {
     RemoteDocumentSnapshot remoteSnap,
     Serializer<T>? serializer,
   ) {
-    if (!enabled) {
-      return serializer?.fromJson(remoteSnap.data()) ?? remoteSnap.data();
-    }
+    final exists = remoteSnap.exists;
+    final data = exists
+        ? serializer?.fromJson(remoteSnap.data()) ?? remoteSnap.data()
+        : null;
 
-    if (!remoteSnap.exists) {
-      localDoc.delete();
-      return null;
-    } else {
-      final data = serializer?.fromJson(remoteSnap.data()) ?? remoteSnap.data();
-      final snap = localDoc.createOrUpdate(data);
-      onWrite?.call(snap);
+    if (!enabled) {
       return data;
     }
+
+    if (!exists) {
+      localDoc.delete();
+      onWrite?.call(LocalDocumentSnapshot(doc: localDoc, data: null));
+    } else {
+      final snap = localDoc.createOrUpdate(data);
+      onWrite?.call(snap);
+    }
+
+    return data;
   }
 
   bool _beforeWrite<T>(
+    LocalDocument<T> doc,
     RemoteDocumentSnapshot snap,
     Serializer<T>? serializer,
   ) {
@@ -69,6 +77,6 @@ class LoonExtensionFirestore {
       return false;
     }
 
-    return onBeforeWrite?.call(snap, serializer) ?? true;
+    return onBeforeWrite?.call(doc, snap, serializer) ?? true;
   }
 }

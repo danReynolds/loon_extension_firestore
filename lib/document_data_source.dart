@@ -59,6 +59,7 @@ class RemoteDocument<T> {
 
   T? _writeSnap(RemoteDocumentSnapshot remoteSnap) {
     final shouldWrite = LoonExtensionFirestore.instance._beforeWrite(
+      _local,
       remoteSnap,
       serializer,
     );

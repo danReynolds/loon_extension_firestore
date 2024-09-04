@@ -54,7 +54,7 @@ class RemoteCollection<T> {
     );
   }
 
-  RemoteQuery where(
+  RemoteQuery<T> where(
     FirestoreQuery Function(firestore.Query query) query,
   ) {
     return toQuery().where(query);
@@ -115,6 +115,7 @@ class RemoteQuery<T> {
         .map(
           (remoteSnap) {
             final shouldWrite = LoonExtensionFirestore.instance._beforeWrite(
+              _local.doc(remoteSnap.id),
               remoteSnap,
               serializer,
             );

@@ -45,6 +45,11 @@ void main() {
         () async {
           final firestore = FakeFirebaseFirestore();
 
+          final dataSource = CollectionDataSource(
+            local: Loon.collection('users'),
+            remote: firestore.collection('users'),
+          );
+
           final userData = {
             "name": "John",
             "age": 24,
@@ -52,18 +57,14 @@ void main() {
 
           LoonExtensionFirestore.configure(
             enabled: true,
-            onBeforeWrite: (remoteSnap, serializer) {
+            onBeforeWrite: (localDoc, remoteSnap, serializer) {
+              expect(localDoc, dataSource.doc('1').local);
               expect(remoteSnap.data(), userData);
               return true;
             },
             onWrite: (snap) {
               expect(snap.data, userData);
             },
-          );
-
-          final dataSource = CollectionDataSource(
-            local: Loon.collection('users'),
-            remote: firestore.collection('users'),
           );
 
           dataSource.remote.doc('1').create(userData);
@@ -118,7 +119,7 @@ void main() {
 
           LoonExtensionFirestore.configure(
             enabled: true,
-            onBeforeWrite: (remoteSnap, serializer) {
+            onBeforeWrite: (localDoc, remoteSnap, serializer) {
               return remoteSnap.id == '1';
             },
           );
