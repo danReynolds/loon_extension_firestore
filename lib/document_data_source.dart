@@ -89,7 +89,7 @@ class RemoteDocument<T> {
 
   Future<void> create(
     T data, {
-    bool optimistic = false,
+    bool optimistic = true,
   }) {
     final future = _remote.set(serializer?.toJson(data) ?? data);
     if (optimistic) {
@@ -108,7 +108,7 @@ class RemoteDocument<T> {
   Future<void> update(
     T data, {
     Set<String> fields = const {},
-    bool optimistic = false,
+    bool optimistic = true,
   }) {
     final json = serializer?.toJson.call(data) ?? data as loon.Json;
     final pickedJson = fields.isNotEmpty ? json.pick({...fields}) : json;

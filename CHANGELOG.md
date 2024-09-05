@@ -1,3 +1,7 @@
+## 0.0.4
+
+* Default to optimistic.
+
 ## 0.0.3
 
 * Add `onBeforeWrite` event handler.
