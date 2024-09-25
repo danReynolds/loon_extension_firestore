@@ -83,6 +83,18 @@ class RemoteDocument<T> {
     return _remote.id;
   }
 
+  String get path {
+    return _remote.path;
+  }
+
+  RemoteCollection<T> collection(String id) {
+    return RemoteCollection<T>(
+      serializer: serializer,
+      local: _local.subcollection(id),
+      remote: _remote.collection(id),
+    );
+  }
+
   Future<void> delete() {
     return _remote.delete();
   }

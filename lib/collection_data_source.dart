@@ -28,7 +28,7 @@ class CollectionDataSource<T> {
   DocumentDataSource<T> doc(String id) {
     return DocumentDataSource<T>(
       local: local.doc(id),
-      remote: remote._remote.doc(id),
+      remote: remote.ref.doc(id),
       serializer: serializer,
     );
   }
@@ -48,16 +48,49 @@ class RemoteCollection<T> {
 
   RemoteQuery<T> toQuery() {
     return RemoteQuery<T>(
+      path: _remote.path,
       serializer: serializer,
       local: _local,
       remote: _remote,
     );
   }
 
+  FirestoreCollection get ref {
+    return _remote;
+  }
+
   RemoteQuery<T> where(
-    FirestoreQuery Function(firestore.Query query) query,
-  ) {
-    return toQuery().where(query);
+    Object? fieldOrFilter, {
+    Object? isEqualTo,
+    Object? isNotEqualTo,
+    Object? isLessThan,
+    Object? isLessThanOrEqualTo,
+    Object? isGreaterThan,
+    Object? isGreaterThanOrEqualTo,
+    Object? arrayContains,
+    Iterable<Object?>? arrayContainsAny,
+    Iterable<Object?>? whereIn,
+    Iterable<Object?>? whereNotIn,
+    bool? isNull,
+  }) {
+    if (fieldOrFilter == null) {
+      return toQuery();
+    }
+
+    return toQuery().where(
+      fieldOrFilter,
+      isEqualTo: isEqualTo,
+      isNotEqualTo: isNotEqualTo,
+      isLessThan: isLessThan,
+      isLessThanOrEqualTo: isLessThanOrEqualTo,
+      isGreaterThan: isGreaterThan,
+      isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+      arrayContains: arrayContains,
+      arrayContainsAny: arrayContainsAny,
+      whereIn: whereIn,
+      whereNotIn: whereNotIn,
+      isNull: isNull,
+    );
   }
 
   RemoteQuery<T> limit(int amount) {
@@ -89,6 +122,7 @@ class RemoteCollection<T> {
 
   Stream<List<T>> stream() {
     return RemoteQuery<T>(
+      path: _remote.path,
       serializer: serializer,
       local: _local,
       remote: _remote,
@@ -100,14 +134,20 @@ class RemoteQuery<T> {
   late final LocalCollection<T> _local;
   late final FirestoreQuery _remote;
   final Serializer<T>? serializer;
+  final String path;
 
   RemoteQuery({
     required this.serializer,
+    required this.path,
     required LoonCollection<T> local,
     required FirestoreQuery remote,
   }) {
     _local = local;
     _remote = remote;
+  }
+
+  FirestoreQuery get ref {
+    return _remote;
   }
 
   List<T> _writeSnaps(List<firestore.QueryDocumentSnapshot> snaps) {
@@ -136,17 +176,47 @@ class RemoteQuery<T> {
   }
 
   RemoteQuery<T> where(
-    FirestoreQuery Function(FirestoreQuery collection) query,
-  ) {
+    Object? fieldOrFilter, {
+    Object? isEqualTo,
+    Object? isNotEqualTo,
+    Object? isLessThan,
+    Object? isLessThanOrEqualTo,
+    Object? isGreaterThan,
+    Object? isGreaterThanOrEqualTo,
+    Object? arrayContains,
+    Iterable<Object?>? arrayContainsAny,
+    Iterable<Object?>? whereIn,
+    Iterable<Object?>? whereNotIn,
+    bool? isNull,
+  }) {
+    if (fieldOrFilter == null) {
+      return this;
+    }
+
     return RemoteQuery<T>(
+      path: path,
       serializer: serializer,
       local: _local,
-      remote: query(_remote),
+      remote: _remote.where(
+        fieldOrFilter,
+        isEqualTo: isEqualTo,
+        isNotEqualTo: isNotEqualTo,
+        isLessThan: isLessThan,
+        isLessThanOrEqualTo: isLessThanOrEqualTo,
+        isGreaterThan: isGreaterThan,
+        isGreaterThanOrEqualTo: isGreaterThanOrEqualTo,
+        arrayContains: arrayContains,
+        arrayContainsAny: arrayContainsAny,
+        whereIn: whereIn,
+        whereNotIn: whereNotIn,
+        isNull: isNull,
+      ),
     );
   }
 
   RemoteQuery<T> limit(int amount) {
     return RemoteQuery<T>(
+      path: path,
       serializer: serializer,
       local: _local,
       remote: _remote.limit(amount),
@@ -158,6 +228,7 @@ class RemoteQuery<T> {
     bool descending = false,
   }) {
     return RemoteQuery<T>(
+      path: path,
       serializer: serializer,
       local: _local,
       remote: _remote.orderBy(field, descending: descending),

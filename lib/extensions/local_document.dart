@@ -3,32 +3,53 @@ part of loon_extension_firestore;
 extension DocumentExtensions<T> on LoonDocument<T> {
   /// Optimistically writes the document with then given data. If the provided future
   /// throws an exception, then the update is rolled back.
-  Future<void> optimisticUpdate(T data, Future future) async {
+  Future<S> optimisticUpdate<S>(T data, Future<S> future) async {
     if (!LoonExtensionFirestore.instance.enabled) {
-      await future;
-      return;
+      return future;
     }
 
     final existingValue = get()!.data;
     try {
       update(data);
-      await future;
+      return await future;
     } catch (e) {
       update(existingValue);
+      rethrow;
     }
   }
 
-  Future<void> optimisticCreate(T data, Future future) async {
+  Future<S> optimisticCreate<S>(T data, Future<S> future) async {
     if (!LoonExtensionFirestore.instance.enabled) {
-      await future;
-      return;
+      return future;
     }
 
     try {
       create(data);
-      await future;
+      return await future;
     } catch (e) {
       delete();
+      rethrow;
+    }
+  }
+
+  Future<S> optimisticCreateOrUpdate<S>(T data, Future<S> future) {
+    if (exists()) {
+      return optimisticUpdate(data, future);
+    }
+    return optimisticCreate(data, future);
+  }
+
+  Future<void> optimisticDelete(Future future) async {
+    final prevData = get()?.data;
+
+    try {
+      delete();
+      await future;
+    } catch (e) {
+      if (prevData != null) {
+        createOrUpdate(prevData);
+      }
+      rethrow;
     }
   }
 }

@@ -13,11 +13,15 @@ part 'serializer.dart';
 
 class LoonExtensionFirestore {
   bool enabled = false;
+
+  /// Intercept an updated document before its remote snapshot is written to the cache.
+  /// Return true to proceed with writing the document to the cache, or false to ignore the cache.
   bool Function(
     LocalDocument doc,
     RemoteDocumentSnapshot snap,
     Serializer? serializer,
   )? onBeforeWrite;
+
   void Function(LocalDocumentSnapshot snap)? onWrite;
 
   LoonExtensionFirestore._();

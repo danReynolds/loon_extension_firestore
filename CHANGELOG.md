@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Migrate remote querying to match cloud_firestore
+
 ## 0.0.4
 
 * Default to optimistic.
