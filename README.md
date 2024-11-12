@@ -102,7 +102,7 @@ final dataSource = CollectionDataSource(
 final snap = await dataSource.doc('1').remote.get();
 ```
 
-* **onBeforeWrite**: The `onBeforeWrite` handler fires before a Firestore document is written to the local Loon cache and allows writing of documents to the cache to be canceled if the event returns false.
+* **onBeforeWrite**: The `onBeforeWrite` handler fires before a Firestore document is written to the local Loon cache and allows writing of documents to the cache to be modified before caching or canceled altogether if the event returns false.
 
 ```dart
 LoonExtensionFirestore.configure(
