@@ -1,3 +1,7 @@
+## 0.0.6
+
+Bump version
+
 ## 0.0.5
 
 * Migrate remote querying to match cloud_firestore
