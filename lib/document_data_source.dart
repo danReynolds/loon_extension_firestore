@@ -95,8 +95,14 @@ class RemoteDocument<T> {
     );
   }
 
-  Future<void> delete() {
-    return _remote.delete();
+  Future<void> delete({
+    bool optimistic = true,
+  }) async {
+    final future = _remote.delete();
+    if (optimistic) {
+      return _local.optimisticDelete(future);
+    }
+    return future;
   }
 
   Future<void> create(

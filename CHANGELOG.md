@@ -1,6 +1,10 @@
+## 0.0.7
+
+* Small fixes
+
 ## 0.0.6
 
-Bump version
+* Bump version
 
 ## 0.0.5
 

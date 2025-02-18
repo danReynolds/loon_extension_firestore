@@ -1,7 +1,7 @@
 part of loon_extension_firestore;
 
 extension MapExtensions<T, S> on Map<T, S> {
-  Map<T, S> pick(Set<T>? keys) {
+  Map<T, S> pick(Iterable<T>? keys) {
     if (keys == null || keys.isEmpty) {
       return this;
     }

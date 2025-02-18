@@ -1,6 +1,6 @@
 name: loon_extension_firestore
 description: The Loon Firestore extension used to easily sync documents fetched remotely from Firestore into the local Loon cache.
-version: 0.0.6
+version: 0.0.7
 homepage: https://github.com/danReynolds/loon_extension_firestore
 
 environment:
