@@ -1,6 +1,7 @@
 library loon_extension_firestore;
 
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loon/loon.dart' as loon;
 import 'dart:io';
 

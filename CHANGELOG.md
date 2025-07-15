@@ -1,3 +1,7 @@
+## 0.0.8
+
+* Fix bug where fetching data would fallback to cached responses when offline. Data fetches are now only against the server source.
+
 ## 0.0.7
 
 * Small fixes

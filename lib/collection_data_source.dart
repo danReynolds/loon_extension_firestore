@@ -236,7 +236,7 @@ class RemoteQuery<T> {
   }
 
   Future<List<T>> get() async {
-    final snap = await _remote.get();
+    final snap = await _remote.get(const GetOptions(source: Source.server));
     return _writeSnaps(snap.docs);
   }
 

@@ -148,7 +148,11 @@ class RemoteDocument<T> {
   }
 
   Future<T?> get() async {
-    return _writeSnap(await _remote.get());
+    return _writeSnap(
+      await _remote.get(
+        const GetOptions(source: Source.server),
+      ),
+    );
   }
 
   Stream<T?> stream() {
