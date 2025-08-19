@@ -1,3 +1,7 @@
+## 0.0.9
+
+* Fix bug where `snapshots()` API was incorrectly handling document writes when offline.
+
 ## 0.0.8
 
 * Fix bug where fetching data would fallback to cached responses when offline. Data fetches are now only against the server source.

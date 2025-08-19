@@ -156,6 +156,11 @@ class RemoteDocument<T> {
   }
 
   Stream<T?> stream() {
-    return _remote.snapshots().map(_writeSnap);
+    return _remote
+        .snapshots(includeMetadataChanges: true)
+        // Filter out cached events, since the Loon cache is used instead of the Firestore cache
+        // and only server updates should be returned.
+        .where((snap) => !snap.metadata.isFromCache)
+        .map((snap) => _writeSnap(snap));
   }
 }

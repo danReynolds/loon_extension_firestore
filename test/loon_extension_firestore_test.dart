@@ -99,7 +99,7 @@ void main() {
             data: userData,
           );
 
-          dataSource.remote.doc('1').create(userData);
+          dataSource.remote.doc('1').create(userData, optimistic: false);
           expect(localSnap.doc.exists(), false);
 
           dataSource.remote.doc('1').create(userData, optimistic: true);
