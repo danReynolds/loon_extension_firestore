@@ -1,6 +1,6 @@
 # Loon Extension Firestore
 
-A Firestore extension that connects [Loon](https://github.com/danReynolds/loon), the reactive document store for Fluter to the [Cloud Firestore](https://pub.dev/packages/cloud_firestore) package. Enables easy syncing of documents fetched remotely from Firestore into the local Loon cache.
+A Firestore extension that connects [Loon](https://github.com/danReynolds/loon), the reactive document store for Flutter, to the [Cloud Firestore](https://pub.dev/packages/cloud_firestore) package. Enables easy syncing of documents fetched remotely from Firestore into the local Loon cache.
 
 ## Install
 ```dart
